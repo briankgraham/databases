@@ -56,35 +56,31 @@ exports.insertNewMessage = function(data) {
   .finally(function () {
     connection.end();
   });
-
-  /*connection.query('SELECT id FROM users WHERE name = ?', [data.username], function(err, results) {
-    if (err) throw err;
-    if (results.length === 0) {
-      connection.query('INSERT INTO users SET ?', {name: data.username}, function(err, results) {
-        if (err) throw err;
-        userId = results.insertId;
-      });
-    } else {
-      userId = results[0].id;
-    }
-  });
-
-  connection.query('SELECT id FROM rooms WHERE name = ?', [data.roomname], function(err, results) {
-    if (err) throw err;
-    if (results.length === 0) {
-      connection.query('INSERT INTO rooms SET ?', {name: data.roomname}, function(err, results) {
-        if (err) throw err;
-        roomId = results.insertId;
-      });
-    } else {
-      roomId = results[0].id;
-    }
-    connection.query('INSERT INTO messages SET ?', {message: data.message, room_id: roomId, user_id: userId}, function(err, results) {
-      if (err) throw err;
-    });
-  });*/
-
-  
-  //setTimeout(connection.end.bind(connection), 1000)
 };
 
+exports.getAllMessages = function() {
+  return connection.queryAsync('SELECT messages.message, users.name FROM messages \
+                                INNER JOIN users ON messages.user_id = users.id')
+          .finally(function() {
+            connection.end();
+          });
+};
+
+exports.getRoomMessages = function(data) {
+  return connection.queryAsync('SELECT messages.message, rooms.name, users.name FROM messages \
+                                INNER JOIN rooms ON messages.room_id = rooms.id \
+                                INNER JOIN users ON messages.user_id = users.id \
+                                WHERE rooms.name = ?', [data.roomname])
+         .finally(function() {
+            connection.end();
+         });
+};
+
+exports.getUserMessages = function(username) {
+  return connection.queryAsync('SELECT messages.message, users.name FROM messages \
+                                INNER JOIN users ON users.id = messages.user_id \
+                                WHERE users.name = ?', [data.username])
+         .finally(function() {
+            connection.end();
+         });
+};
